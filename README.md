@@ -15,5 +15,7 @@ Original project:
 
 [Android Room With a View](https://github.com/googlecodelabs/android-room-with-a-view) original project in github
 
-<p align=center><b>Architecture</b></p>
+
+Architecture
+------------
 ![App Architecture diagram](https://github.com/techartist/RoomMVVM/blob/master/cc45ecfbf5889f07.png)
