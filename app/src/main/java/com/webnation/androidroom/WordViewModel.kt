@@ -5,27 +5,45 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.webnation.androidroom.model.Word
 import com.webnation.androidroom.model.WordRepository
-import kotlinx.coroutines.Job
+import com.webnation.androidroom.model.WordRoomDatabase
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.system.measureTimeMillis
 
 
 class WordViewModel(application: Application) : AndroidViewModel(application) {
-    private val mRepository: WordRepository
 
-    internal val allWords: LiveData<List<Word>>?
-    private val job = Job()
+        private var parentJob = Job()
+        private val coroutineContext: CoroutineContext
+            get() = parentJob + Dispatchers.Main
+        private val scope = CoroutineScope(coroutineContext)
 
-    init {
-        mRepository = WordRepository(application)
-        allWords = mRepository.allWords
-    }
+        private val repository: WordRepository
+        val allWords: LiveData<List<Word>>
 
+        init {
+            val wordsDao = WordRoomDatabase.getDatabase(application).wordDao()
+            repository = WordRepository(wordsDao)
+            allWords = repository.allWords
+        }
 
+        fun insert(word: Word) = scope.launch(Dispatchers.IO) {
+            repository.insert(word)
+        }
 
-    fun insert(word: Word) {
-        mRepository.insert(word)
-    }
+        fun deleteAllWords() = scope.launch(Dispatchers.IO) {
+            repository.deleteAllWords()
+        }
 
-    fun deleteAll() {
-        mRepository.deleteAllWords()
-    }
+        suspend fun countAllWords() : Int = scope.async(Dispatchers.IO) { repository.countAllWords() }.await()
+
+        fun populateDatabase() = scope.launch(Dispatchers.IO) {
+            repository.populateDatabase()
+        }
+
+        override fun onCleared() {
+            super.onCleared()
+            parentJob.cancel()
+        }
 }
+

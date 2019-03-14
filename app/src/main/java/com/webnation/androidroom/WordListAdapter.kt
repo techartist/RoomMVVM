@@ -10,32 +10,20 @@ import com.webnation.androidroom.model.Word
 
 
 class WordListAdapter internal constructor(context: Context) : RecyclerView.Adapter<WordListAdapter.WordViewHolder>() {
-    private val mInflater: LayoutInflater
-    private var mWords: List<Word>? = null // Cached copy of words
+    private val mInflater: LayoutInflater = LayoutInflater.from(context)
+    private var mWords = emptyList<Word>()
 
-    init {
-        mInflater = LayoutInflater.from(context)
-    }
 
-    override fun onBindViewHolder(p0: WordViewHolder, p1: Int) {
-        if (mWords != null) {
-            val current = let {mWords!![p1]}
-            p0.wordItemView.setText(current.word)
-        } else {
-            // Covers the case of data not being ready yet.
-            p0.wordItemView.text = "No Word"
-        }
+    override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
+        val current = mWords[position]
+        holder.wordItemView.text = current.word
     }
 
 
 
     override fun getItemCount(): Int {
-        var i = 0;
-         val int = mWords.let { it?.size }
-        if (int != null) return int
-        else return 0
+         return mWords.size
     }
-
 
 
     class WordViewHolder constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {

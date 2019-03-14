@@ -1,40 +1,39 @@
 package com.webnation.androidroom.model
 
 import android.app.Application
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.*
 
 
-class WordRepository(application: Application) {
+class WordRepository(private val wordDao: WordDao) {
 
-    private val mWordDao : WordDao?
-    val allWords: LiveData<List<Word>>?
-    val job = Job()
+    val allWords: LiveData<List<Word>> = wordDao.getAllWords()
 
-    val coroutineScope = CoroutineScope(Dispatchers.IO + job)
-
-    init {
-        val db = WordRoomDatabase.getDatabase(application,coroutineScope)
-        mWordDao = db.wordDao()
-        allWords = mWordDao.allWords
+    @WorkerThread
+    suspend fun insert(word: Word) {
+        wordDao.insert(word)
     }
 
 
-    fun insert(word: Word) {
-        insertWord(word)
+    @WorkerThread
+    suspend fun deleteAllWords() {
+        wordDao.deleteAll()
     }
 
-    fun insertWord(word : Word) {
-        coroutineScope.launch {
-            mWordDao?.insert(word)
-        }
+    @WorkerThread
+    suspend fun countAllWords() : Int {
+        return wordDao.getCountOfWords()
     }
 
-    fun deleteAllWords() {
-        coroutineScope.launch {
-            mWordDao?.deleteAll()
-        }
-    }
+    @WorkerThread
+    suspend fun populateDatabase() {
+        wordDao.deleteAll()
 
+        var word = Word("Hello")
+        wordDao.insert(word)
+        word = Word("World!")
+        wordDao.insert(word)
+    }
 
 }

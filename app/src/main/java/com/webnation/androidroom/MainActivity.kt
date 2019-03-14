@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import com.webnation.androidroom.model.Word
+import kotlinx.coroutines.runBlocking
 
 import org.koin.androidx.viewmodel.ext.viewModel
 
@@ -43,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView.setLayoutManager(LinearLayoutManager(this))
         //mWordViewModel = ViewModelProviders.of(this).get(WordViewModel::class.java)
 
-        mWordViewModel.allWords?.observe(this, object : Observer<List<Word>> {
+        mWordViewModel.allWords.observe(this, object : Observer<List<Word>> {
             override fun onChanged(words: List<Word>?) {
                 // Update the cached copy of the words in the adapter.
                 if (words != null) {
@@ -51,7 +52,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        runBlocking { if (mWordViewModel.countAllWords() == 0)  {
+            mWordViewModel.populateDatabase()
+        }}
     }
+
+
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -84,7 +91,7 @@ class MainActivity : AppCompatActivity() {
 
 
         return if (id == R.id.action_settings) {
-            mWordViewModel.deleteAll()
+            mWordViewModel.deleteAllWords()
             adapter.deleteAllWords()
             return true
         } else super.onOptionsItemSelected(item)
